@@ -14,7 +14,7 @@
         }
         .section {
             background-color: white;
-            padding: 204px;
+            padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -200,33 +200,18 @@
         let currentSection = 1;
         let textHistory = [];
 
-        function saveToHistory() {
-            textHistory.push(currentText);
+        function showSection(s) {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById('section' + i);
+                el.classList.toggle('hidden', s !== 0 && i !== s);
+            }
+            updateOutput();
         }
 
-        function goBack(section) {
-            // 現在のテキストを保存
+        function goBack(s) {
             saveToHistory();
-            
-            // 前のセクションのテキストを復元
-            if (textHistory.length > 0) {
-                currentText = textHistory.pop();
-            } else {
-                currentText = '';
-            }
-            
-            // セクションを切り替え
-            document.getElementById('section1').classList.add('hidden');
-            document.getElementById('section2').classList.add('hidden');
-            document.getElementById('section3').classList.add('hidden');
-            
-            if (section === 1) {
-                document.getElementById('section1').classList.remove('hidden');
-            } else if (section === 2) {
-                document.getElementById('section2').classList.remove('hidden');
-            }
-            
-            updateOutput();
+            currentText = textHistory.length ? textHistory.pop() : '';
+            showSection(s);
         }
 
         function toggleCustomLocation() {
@@ -237,59 +222,32 @@
 
         function generateSection1() {
             saveToHistory();
-            const time = document.getElementById('time1').value;
-            const name = document.getElementById('name1').value;
-            const locationSelect = document.getElementById('location1');
-            const customLocation = document.getElementById('customLocation');
-            
-            let location = locationSelect.value;
-            if (location === '') {
-                location = customLocation.value;
-            }
-            
-            if (currentText) {
-                currentText += '\n↓\n';
-            }
-            currentText += `${time} ${location}ピック（${name}さん）`;
-            
-            document.getElementById('section1').classList.add('hidden');
-            document.getElementById('section2').classList.remove('hidden');
-            updateOutput();
+            const t = document.getElementById('time1').value;
+            const n = document.getElementById('name1').value;
+            const ls = document.getElementById('location1');
+            const cl = document.getElementById('customLocation');
+            const l = ls.value || cl.value;
+            currentText += (currentText ? '\n↓\n' : '') + `${t} ${l}ピック（${n}さん）`;
+            showSection(2);
         }
 
-        function generateSection2(choice) {
+        function generateSection2(c) {
             saveToHistory();
-            if (choice === 3) {
-                const location = document.getElementById('location2').value;
-                currentText += `\n↓\n${location}入れ込み`;
-            } else if (choice === 4) {
-                currentText += '\n↓\n錦糸町戻り';
-            }
-            
-            document.getElementById('section2').classList.add('hidden');
-            document.getElementById('section3').classList.remove('hidden');
-            updateOutput();
+            currentText += c === 3 ? `\n↓\n${document.getElementById('location2').value}入れ込み` : '\n↓\n錦糸町戻り';
+            showSection(3);
         }
 
-        function generateSection3(choice) {
+        const msgs = {5: '錦糸町戻り', 6: '待機', 7: '考え中'};
+        function generateSection3(c) {
             saveToHistory();
-            if (choice === 5) {
-                currentText += '\n↓\n錦糸町戻り予定です';
-            } else if (choice === 6) {
-                currentText += '\n↓\n待機予定です';
-            } else if (choice === 7) {
-                currentText += '\n↓\n考え中です';
-            }sss
-            
+            currentText += `\n↓\n${msgs[c]}予定です`;
             updateOutput();
         }
 
         function finish() {
-            if (currentText && !currentText.endsWith('予定です')) {
-                currentText += '予定です';
-            }
+            if (currentText && !currentText.endsWith('予定です')) currentText += '予定です';
             updateOutput();
-            document.getElementById('section3').classList.add('hidden');
+            showSection(0);
         }
 
         function updateOutput() {
@@ -308,24 +266,13 @@
         }
 
         function resetForm() {
-            // 履歴をクリア
             textHistory = [];
-            // 入力フィールドをリセット
-            document.getElementById('time1').value = '';
-            document.getElementById('name1').value = '';
-            document.getElementById('location2').value = '';
+            ['time1', 'name1', 'location2'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('location1').selectedIndex = 0;
             document.getElementById('customLocation').value = '';
             document.getElementById('customLocation').style.display = 'inline-block';
-            
-            // テキストをクリア
             currentText = '';
-            updateOutput();
-            
-            // セクションをリセット
-            document.getElementById('section1').classList.remove('hidden');
-            document.getElementById('section2').classList.add('hidden');
-            document.getElementById('section3').classList.add('hidden');
+            showSection(1);
         }
 
         function clearMemo() {
@@ -333,16 +280,11 @@
         }
 
         function goToNext() {
-            // セクション3を非表示
-            document.getElementById('section3').classList.add('hidden');
-            // セクション1を表示
-            document.getElementById('section1').classList.remove('hidden');
-            // 入力フィールドをリセット
-            document.getElementById('time1').value = '';
-            document.getElementById('name1').value = '';
+            ['time1', 'name1'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('location1').selectedIndex = 0;
             document.getElementById('customLocation').value = '';
             document.getElementById('customLocation').style.display = 'inline-block';
+            showSection(1);
         }
     </script>
 </body>
